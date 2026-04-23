@@ -105,7 +105,7 @@ Respond ONLY with valid JSON, no markdown:
 {
   "chapterTitle": "Fun exciting chapter title",
   "subtitle": "One line that sets the mood",
-  "story": "The chapter. Age-appropriate length. Exciting and funny. Use ${profile.childName}'s name. Separate paragraphs with \\n",
+  "story": "3-4 short paragraphs only. Keep it concise. Separate paragraphs with \\n",
   "choices": [
     { "emoji": "⚡", "text": "First exciting choice", "hint": "What might happen..." },
     { "emoji": "🌟", "text": "Second exciting choice", "hint": "What might happen..." },
