@@ -190,7 +190,7 @@ export default function StoryOurs() {
 
     try {
       const userMsg = storyHistory.length === 0
-        ? `Begin Chapter 1 of ${profile.childName}'s adventure. Open with an exciting hook that immediately drops them into the world. Make ${profile.childName} feel like the hero from the very first sentence. Include something funny that will make the parent smile.`
+        ? `Begin Chapter 1 of ${profile.childName}'s adventure. IMPORTANT: Do NOT start with breakfast, maps, waking up, or any typical story opening. Instead open in the MIDDLE of something already happening — a chase, a discovery, a door that shouldn't be open, a creature that definitely shouldn't be there, a voice from somewhere impossible, a machine making a very suspicious noise. Drop ${profile.childName} straight into action or mystery from the very first sentence. No slow build — something is ALREADY happening when we arrive. Include something funny that will make the parent smile.`
         : `Story so far:\n${storyHistory.join("\n\n")}\n\nChapter ${chapterNum}. ${profile.childName} chose: "${choiceMade?.text}". Open showing the immediate exciting result of this choice. Keep the momentum going and include at least one funny moment!`;
 
       const res = await fetch("/.netlify/functions/story", {
