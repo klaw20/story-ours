@@ -38,8 +38,8 @@ exports.handler = async function(event, context) {
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-5",
-        max_tokens: 600,
-        system: system || "",
+        max_tokens: 700,
+        system: (system || "") + "\n\nIMPORTANT: Keep your story to 3 tight punchy paragraphs maximum. Short sentences. Every word earns its place. Do not write long paragraphs.",
         messages: messages || [],
       }),
     });
