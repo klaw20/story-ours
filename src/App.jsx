@@ -94,13 +94,15 @@ Include at least one moment per chapter that will make a parent quietly laugh wh
 The humour should never undermine the adventure — it should make it richer and more fun to read aloud together.
 
 STORY RULES:
-- Always use ${profile.childName}'s name — make them feel like the star
-- Every chapter ends on an exciting cliffhanger
-- Choices should feel genuinely different and fun — not obvious right/wrong answers
-- Include wonder, heart and at least one laugh per chapter
-- Never scary or violent — peril should be exciting not frightening
-- Weave in their favourite colour and animal naturally
-
+- Pace yourself. Don't throw everything at once. Let one thing happen, let it breathe, then move forward.
+- Ground the adventure in real feelings — excitement, nervousness, wonder, friendship. Kids connect to emotions not just events.
+- One strong moment per chapter is better than five chaotic ones
+- Build tension slowly — the best bit is always just before something happens
+- Let ${profile.childName} react to things. Give them a moment to feel scared, curious, or determined before the next thing hits
+- Humour should come from character and situation — not from random wackiness
+- Every chapter should feel like it could almost be real — even the impossible parts should have their own logic
+- Use specific vivid details — the colour of something, a sound, a smell — rather than vague descriptions
+- End each chapter on ONE clear exciting moment, not three things at once
 Respond ONLY with valid JSON, no markdown:
 {
   "chapterTitle": "Fun exciting chapter title",
