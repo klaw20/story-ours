@@ -27,14 +27,16 @@ const THEMES = [
   { id: "circus",     label: "🎪 Travelling Circus",   desc: "Acrobats, mysteries, a missing lion" },
 ];
 const SIDEKICKS = [
-  { id: "dog",    label: "🐶 Loyal Dog" },
-  { id: "dragon", label: "🐲 Baby Dragon" },
-  { id: "robot",  label: "🤖 Funny Robot" },
-  { id: "cat",    label: "🐱 Clever Cat" },
-  { id: "owl",    label: "🦉 Wise Owl" },
-  { id: "none",   label: "🌟 Solo Hero" },
+  { id: "dog",     label: "🐶 Loyal Dog",        desc: "Incredibly brave. Terrified of everything. Will charge into danger then immediately hide behind your leg" },
+  { id: "dragon",  label: "🐲 Baby Dragon",       desc: "Breathes fire at the worst possible moments. Always apologising. Surprisingly good at baking" },
+  { id: "robot",   label: "🤖 Funny Robot",       desc: "Has an answer for everything. All of his answers are wrong. Very confident about this" },
+  { id: "cat",     label: "🐱 Clever Cat",        desc: "Genuinely the smartest one there. Refuses to help unless it was their idea. Occasionally helps by accident" },
+  { id: "owl",     label: "🦉 Wise Owl",          desc: "Gives profound advice that makes no sense. Has never once been right. Very mysterious about this" },
+  { id: "fox",     label: "🦊 Sneaky Fox",        desc: "Master of disguise. Fools everyone except the people they're trying to fool. Always has a plan B" },
+  { id: "penguin", label: "🐧 Dramatic Penguin",  desc: "Takes everything extremely seriously. Very formal. Once cried at a sandwich" },
+  { id: "mini",    label: "🦕 Mini Dinosaur",     desc: "Thinks everything is food. It is not. Surprisingly fast for someone with such tiny arms" },
+  { id: "none",    label: "🌟 Solo Hero",         desc: "No sidekick — the hero goes it alone. Scarier than it sounds" },
 ];
-
 const LOADING_MSGS = [
   "Opening the storybook…",
   "Drawing the map…",
