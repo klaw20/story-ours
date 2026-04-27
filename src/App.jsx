@@ -37,28 +37,13 @@ const LOADING_MSGS = [
 
 const FREE_CHAPTERS = 3;
 
-function saveProgress(data) {
-  try { localStorage.setItem("storyours_progress", JSON.stringify(data)); } catch {}
-}
+function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} }
+function load(key) { try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : null; } catch { return null; } }
+function remove(key) { try { localStorage.removeItem(key); } catch {} }
 
-function loadProgress() {
-  try {
-    const raw = localStorage.getItem("storyours_progress");
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
-}
-
-function clearProgress() {
-  try { localStorage.removeItem("storyours_progress"); } catch {}
-}
-
-function saveUnlocked() {
-  try { localStorage.setItem("storyours_unlocked", "true"); } catch {}
-}
-
-function isUnlocked() {
-  try { return localStorage.getItem("storyours_unlocked") === "true"; } catch { return false; }
-}
+const PROGRESS_KEY = "so_progress";
+const UNLOCKED_KEY = "so_unlocked";
+const EMAIL_KEY    = "so_email";
 
 function buildSystem(profile) {
   const ageGroup = AGE_GROUPS.find(a => a.id === profile.ageGroup);
@@ -66,48 +51,47 @@ function buildSystem(profile) {
   const sidekick = SIDEKICKS.find(s => s.id === profile.sidekick);
 
   const ageInstructions = {
-    little: "Use very simple words a 4-6 year old understands. Short sentences. Lots of wonder and warmth. Nothing scary. Very gentle choices.",
-    junior: "Write for 7-9 year olds. Fun, exciting, a little bit silly sometimes. Mild peril that resolves happily. Good vocabulary but accessible.",
-    hero:   "Write for 10-12 year olds. More complex plot, real stakes, genuine mystery. Can handle suspense and challenge. Treat them as smart readers.",
+    little: "Use very simple words a 4-6 year old understands. Short sentences. Lots of wonder and warmth. Nothing scary.",
+    junior: "Write for 7-9 year olds. Fun, exciting, a little bit silly sometimes. Mild peril that resolves happily.",
+    hero:   "Write for 10-12 year olds. More complex plot, real stakes, genuine mystery. Treat them as smart readers.",
   };
 
-  return `You are writing a personalised choose-your-own-adventure story for a child that is read aloud by a parent. Every chapter should feel magical, exciting and completely written for THIS specific child — but also secretly entertaining for the adult reading it.
+  return `You are writing a personalised choose-your-own-adventure story for a child that is read aloud by a parent. Every chapter should feel magical and completely written for THIS specific child — but also secretly entertaining for the adult reading it.
 
-HERO: "${profile.childName}" — use their name naturally throughout the story
+HERO: "${profile.childName}" — use their name naturally throughout
 AGE GROUP: ${ageGroup?.label} (${ageGroup?.ages})
 THEME: ${theme?.label} — ${theme?.desc}
-SIDEKICK: ${sidekick?.id === "none" ? "No sidekick — the hero goes it alone" : `A ${sidekick?.label} companion called ${profile.sidekickName || sidekick?.label}`}
+SIDEKICK: ${sidekick?.id === "none" ? "No sidekick — the hero goes it alone" : `A ${sidekick?.label} called ${profile.sidekickName || sidekick?.label}`}
 FAVOURITE COLOUR: ${profile.colour} — weave this into the world naturally
-FAVOURITE ANIMAL: ${profile.animal} — include this animal somewhere in the story
+FAVOURITE ANIMAL: ${profile.animal} — include this animal somewhere
 
 AGE-APPROPRIATE WRITING:
 ${ageInstructions[profile.ageGroup]}
 
-HUMOUR RULES — THIS IS IMPORTANT:
-Include at least one moment per chapter that will make a parent quietly laugh while reading aloud. Think Roald Dahl or Pixar — genuinely funny for adults but completely appropriate for kids. Examples:
-- A villain whose evil plan is embarrassingly mundane ("I will steal ALL the biscuits!")
-- A sidekick who is dramatically useless in a funny way
-- An authority figure (wizard, king, captain) who is secretly incompetent
-- Absurd logic that makes perfect sense in the story world
-- A running gag that gets funnier each chapter
-- Something the child hero does that parents will recognise ("${profile.childName} refused to eat the magic vegetables even though they glowed gold")
-The humour should never undermine the adventure — it should make it richer and more fun to read aloud together.
+HUMOUR RULES:
+Include at least one moment per chapter that will make a parent quietly laugh. Think Roald Dahl or Pixar — funny for adults but completely appropriate for kids. A villain whose evil plan is embarrassingly mundane. A sidekick who is dramatically useless. An authority figure who is secretly incompetent.
 
 STORY RULES:
 - Pace yourself. Don't throw everything at once. Let one thing happen, let it breathe, then move forward.
-- Ground the adventure in real feelings — excitement, nervousness, wonder, friendship. Kids connect to emotions not just events.
+- Ground the adventure in real feelings — excitement, nervousness, wonder, friendship.
 - One strong moment per chapter is better than five chaotic ones
 - Build tension slowly — the best bit is always just before something happens
-- Let ${profile.childName} react to things. Give them a moment to feel scared, curious, or determined before the next thing hits
-- Humour should come from character and situation — not from random wackiness
-- Every chapter should feel like it could almost be real — even the impossible parts should have their own logic
-- Use specific vivid details — the colour of something, a sound, a smell — rather than vague descriptions
-- End each chapter on ONE clear exciting moment, not three things at once
+- Let ${profile.childName} react to things before the next thing hits
+- Humour should come from character and situation — not random wackiness
+- Every chapter should feel like it could almost be real — even the impossible parts have their own logic
+- Use specific vivid details — a colour, a sound, a smell
+- End each chapter on ONE clear exciting moment
+- Never scary or violent — peril should be exciting not frightening
+- Always use ${profile.childName}'s name — make them feel like the star
+- Weave in their favourite colour and animal naturally
+
+IMPORTANT OPENING RULES: Do NOT start with breakfast, maps, or waking up. Open in the middle of something already happening — but make it feel REAL first. Ground ${profile.childName} in one specific vivid detail before the magic hits.
+
 Respond ONLY with valid JSON, no markdown:
 {
   "chapterTitle": "Fun exciting chapter title",
   "subtitle": "One line that sets the mood",
-  "story": "3-4 short paragraphs only. Keep it concise. Separate paragraphs with \\n",
+  "story": "2-3 punchy paragraphs. Short sentences. Every word earns its place. Separate with \\n",
   "choices": [
     { "emoji": "⚡", "text": "First exciting choice", "hint": "What might happen..." },
     { "emoji": "🌟", "text": "Second exciting choice", "hint": "What might happen..." },
@@ -134,22 +118,32 @@ export default function StoryOurs() {
   const [showPaywall,    setShowPaywall]    = useState(false);
   const [unlocked,       setUnlocked]       = useState(false);
   const [returning,      setReturning]      = useState(false);
+  const [emailInput,     setEmailInput]     = useState("");
+  const [emailScreen,    setEmailScreen]    = useState(false);
+  const [emailLoading,   setEmailLoading]   = useState(false);
+  const [emailError,     setEmailError]     = useState("");
 
   const typingRef  = useRef(null);
   const loadingRef = useRef(null);
   const timeoutRef = useRef(null);
 
   useEffect(() => {
+    // Check Stripe redirect
     const params = new URLSearchParams(window.location.search);
     if (params.get("unlocked") === "true") {
-      setUnlocked(true);
-      setShowPaywall(false);
-      saveUnlocked();
+      setEmailScreen(true);
       window.history.replaceState({}, "", window.location.pathname);
     }
-    if (isUnlocked()) setUnlocked(true);
 
-    const saved = loadProgress();
+    // Check saved email/unlock
+    const savedEmail = load(EMAIL_KEY);
+    if (savedEmail && load(UNLOCKED_KEY)) {
+      setUnlocked(true);
+      setEmailInput(savedEmail);
+    }
+
+    // Load saved progress
+    const saved = load(PROGRESS_KEY);
     if (saved?.profile && saved?.chapterNum > 1) {
       setReturning(true);
       setProfile(saved.profile);
@@ -174,8 +168,78 @@ export default function StoryOurs() {
     clearTimeout(timeoutRef.current);
   }
 
-  async function generateChapter(choiceMade = null) {
-    if (chapterNum > FREE_CHAPTERS && !unlocked) {
+  async function handleEmailSubmit() {
+    if (!emailInput.trim() || !emailInput.includes("@")) {
+      setEmailError("Please enter a valid email address");
+      return;
+    }
+
+    setEmailLoading(true);
+    setEmailError("");
+
+    try {
+      // Save subscriber to Supabase
+      await fetch("/.netlify/functions/save-subscriber", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: emailInput.trim() }),
+      });
+
+      // Save locally
+      save(EMAIL_KEY, emailInput.trim());
+      save(UNLOCKED_KEY, true);
+      setUnlocked(true);
+      setEmailScreen(false);
+      setShowPaywall(false);
+
+      // Continue to next chapter if they were at paywall
+      if (chapterNum > FREE_CHAPTERS) {
+        generateChapter(null, true);
+      }
+    } catch (err) {
+      setEmailError("Something went wrong. Please try again.");
+    }
+
+    setEmailLoading(false);
+  }
+
+  async function handleEmailCheck() {
+    if (!emailInput.trim() || !emailInput.includes("@")) {
+      setEmailError("Please enter a valid email address");
+      return;
+    }
+
+    setEmailLoading(true);
+    setEmailError("");
+
+    try {
+      const res = await fetch("/.netlify/functions/check-subscriber", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: emailInput.trim() }),
+      });
+
+      const data = await res.json();
+
+      if (data.subscribed) {
+        save(EMAIL_KEY, emailInput.trim());
+        save(UNLOCKED_KEY, true);
+        setUnlocked(true);
+        setEmailScreen(false);
+        setShowPaywall(false);
+        if (chapterNum > FREE_CHAPTERS) generateChapter(null, true);
+      } else {
+        setEmailError("No subscription found for this email. Please subscribe to continue.");
+      }
+    } catch (err) {
+      setEmailError("Something went wrong. Please try again.");
+    }
+
+    setEmailLoading(false);
+  }
+
+  async function generateChapter(choiceMade = null, forceUnlocked = false) {
+    if (chapterNum > FREE_CHAPTERS && !unlocked && !forceUnlocked) {
       setShowPaywall(true);
       return;
     }
@@ -192,8 +256,8 @@ export default function StoryOurs() {
 
     try {
       const userMsg = storyHistory.length === 0
-        ? `Begin Chapter 1 of ${profile.childName}'s adventure. IMPORTANT: Do NOT start with breakfast, maps, waking up, or any typical story opening. Instead open in the MIDDLE of something already happening — a chase, a discovery, a door that shouldn't be open, a creature that definitely shouldn't be there, a voice from somewhere impossible, a machine making a very suspicious noise. Drop ${profile.childName} straight into action or mystery from the very first sentence. No slow build — something is ALREADY happening when we arrive. Include something funny that will make the parent smile.`
-        : `Story so far:\n${storyHistory.join("\n\n")}\n\nChapter ${chapterNum}. ${profile.childName} chose: "${choiceMade?.text}". Open showing the immediate exciting result of this choice. Keep the momentum going and include at least one funny moment!`;
+        ? `Begin Chapter 1 of ${profile.childName}'s adventure. IMPORTANT: Do NOT start with breakfast, maps, or waking up. Open in the middle of something already happening. Ground ${profile.childName} in one specific vivid detail before the magic hits. Make ${profile.childName} feel like the hero from the very first sentence. Include something funny that will make the parent smile.`
+        : `Story so far:\n${storyHistory.join("\n\n")}\n\nChapter ${chapterNum}. ${profile.childName} chose: "${choiceMade?.text}". Open showing the immediate exciting result. Keep the momentum but let the moment breathe before the next thing happens.`;
 
       const res = await fetch("/.netlify/functions/story", {
         method: "POST",
@@ -214,13 +278,13 @@ export default function StoryOurs() {
       const parsed = JSON.parse(clean);
 
       setChapter(parsed);
-      const newHistory = [...storyHistory, `Chapter ${chapterNum} — ${parsed.chapterTitle}: ${parsed.story.substring(0, 200)}…`];
+      const newHistory = [...storyHistory, `Ch${chapterNum} — ${parsed.chapterTitle}: ${parsed.story.substring(0, 180)}…`];
       setStoryHistory(newHistory);
       setSelectedChoice(null);
       setScreen("story");
       typeStory(parsed.story);
 
-      saveProgress({ profile, chapterNum: chapterNum + 1, storyHistory: newHistory });
+      save(PROGRESS_KEY, { profile, chapterNum: chapterNum + 1, storyHistory: newHistory });
     } catch (e) {
       stopLoading();
       setError(`Oops! Something went wrong: ${e.message}`);
@@ -240,13 +304,13 @@ export default function StoryOurs() {
     }, 30000);
 
     try {
-      const userMsg = `Story so far:\n${storyHistory.join("\n\n")}\n\nNow write a final triumphant ending chapter. ${profile.childName} saves the day, overcomes the challenge, and celebrates with their friends. Include one last funny moment that ties back to something earlier in the story. End with a warm, joyful closing line that makes the child feel like a true hero.`;
+      const userMsg = `Story so far:\n${storyHistory.join("\n\n")}\n\nWrite a final triumphant ending. ${profile.childName} saves the day and celebrates. Include one last funny callback to something earlier. Warm, joyful, satisfying.`;
 
       const res = await fetch("/.netlify/functions/story", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          system: buildSystem(profile) + `\n\nIMPORTANT: This is the FINAL ENDING. Write a brand new triumphant conclusion. ${profile.childName} must win, feel heroic, and end happy. Include one last funny callback. Warm, joyful, satisfying. Do NOT repeat what just happened.`,
+          system: buildSystem(profile) + `\n\nIMPORTANT: This is the FINAL ENDING. ${profile.childName} must win and end happy. Do NOT repeat what just happened.`,
           messages: [{ role: "user", content: userMsg }],
         }),
       });
@@ -299,14 +363,9 @@ export default function StoryOurs() {
         }),
       });
       const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert("Something went wrong. Please try again.");
-      }
-    } catch (err) {
-      alert("Something went wrong. Please try again.");
-    }
+      if (data.url) window.location.href = data.url;
+      else alert("Something went wrong. Please try again.");
+    } catch { alert("Something went wrong. Please try again."); }
   }
 
   function handleStart() {
@@ -323,13 +382,17 @@ export default function StoryOurs() {
     if (!selectedChoice) return;
     const next = chapterNum + 1;
     setChapterNum(next);
+    if (next > FREE_CHAPTERS && !unlocked) {
+      setShowPaywall(true);
+      return;
+    }
     generateChapter(selectedChoice);
   }
 
   function handleRestart() {
     clearTimeout(typingRef.current);
     stopLoading();
-    clearProgress();
+    remove(PROGRESS_KEY);
     setScreen("onboarding");
     setChapter(null);
     setChapterNum(1);
@@ -339,6 +402,7 @@ export default function StoryOurs() {
     setError("");
     setShowPaywall(false);
     setReturning(false);
+    setEmailScreen(false);
   }
 
   const paragraphs    = displayedText.split("\n").filter(p => p.trim());
@@ -346,61 +410,68 @@ export default function StoryOurs() {
   const showEndingBtn = !isTyping && chapter && !chapter.isEnding && chapterNum >= 2;
 
   const S = {
-    app:         { minHeight: "100vh", background: "#0f1923", color: "#f0f4ff", fontFamily: "'Georgia', serif" },
-    content:     { maxWidth: 680, margin: "0 auto", padding: "0 20px 100px" },
-    header:      { textAlign: "center", padding: "48px 0 36px", borderBottom: "2px solid rgba(100,180,255,0.15)", marginBottom: 40 },
-    stars:       { fontSize: 24, letterSpacing: 8, marginBottom: 16, opacity: 0.7 },
-    logo:        { fontSize: "clamp(32px, 7vw, 52px)", fontWeight: 700, color: "#f0f4ff", marginBottom: 10, letterSpacing: 2, textShadow: "0 0 40px rgba(100,180,255,0.4)" },
-    logoAccent:  { color: "#64b4ff" },
-    tagline:     { fontStyle: "italic", fontSize: 17, color: "rgba(240,244,255,0.5)" },
-    welcome:     { fontSize: 18, lineHeight: 1.7, color: "rgba(240,244,255,0.75)", marginBottom: 40, borderLeft: "3px solid rgba(100,180,255,0.4)", paddingLeft: 20, fontStyle: "italic" },
-    sectionHdr:  { fontSize: 10, letterSpacing: 4, textTransform: "uppercase", color: "#64b4ff", opacity: 0.8, marginBottom: 16, marginTop: 32 },
-    grid2:       { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 8 },
-    fieldGroup:  { marginBottom: 20 },
-    label:       { display: "block", fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "#64b4ff", opacity: 0.7, marginBottom: 8 },
-    input:       { width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(100,180,255,0.2)", borderRadius: 8, padding: "13px 16px", fontFamily: "inherit", fontSize: 16, color: "#f0f4ff", outline: "none", boxSizing: "border-box" },
-    select:      { width: "100%", background: "#131f2e", border: "1px solid rgba(100,180,255,0.2)", borderRadius: 8, padding: "13px 16px", fontFamily: "inherit", fontSize: 16, color: "#f0f4ff", outline: "none", boxSizing: "border-box" },
-    pillRow:     { display: "flex", flexWrap: "wrap", gap: 8 },
-    pill:        { padding: "8px 14px", border: "1px solid rgba(100,180,255,0.2)", borderRadius: 20, fontSize: 14, color: "rgba(240,244,255,0.55)", cursor: "pointer", background: "transparent", fontFamily: "inherit" },
-    pillActive:  { padding: "8px 14px", border: "1px solid #64b4ff", borderRadius: 20, fontSize: 14, color: "#f0f4ff", cursor: "pointer", background: "rgba(100,180,255,0.12)", fontFamily: "inherit" },
-    themeGrid:   { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 },
-    themeBtn:    { padding: "12px 14px", border: "1px solid rgba(100,180,255,0.15)", borderRadius: 10, fontSize: 15, color: "rgba(240,244,255,0.6)", cursor: "pointer", background: "rgba(255,255,255,0.03)", fontFamily: "inherit", textAlign: "left" },
-    themeBtnActive: { padding: "12px 14px", border: "1px solid #64b4ff", borderRadius: 10, fontSize: 15, color: "#f0f4ff", cursor: "pointer", background: "rgba(100,180,255,0.1)", fontFamily: "inherit", textAlign: "left" },
-    btnStart:    { width: "100%", padding: "18px 0", marginTop: 32, background: "linear-gradient(135deg, #1a6fb5, #2196f3)", border: "none", borderRadius: 10, fontSize: 16, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: "#fff", cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 20px rgba(33,150,243,0.3)" },
-    btnGhost:    { width: "100%", padding: "14px 0", marginTop: 12, background: "transparent", border: "1px solid rgba(100,180,255,0.25)", borderRadius: 10, fontSize: 13, letterSpacing: 2, textTransform: "uppercase", color: "rgba(100,180,255,0.6)", cursor: "pointer", fontFamily: "inherit" },
-    profileBar:  { display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(100,180,255,0.12)", borderRadius: 8, padding: "11px 18px", marginBottom: 32 },
-    chapterMeta: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, paddingBottom: 16, borderBottom: "1px solid rgba(100,180,255,0.1)" },
-    chTitle:     { fontSize: "clamp(22px, 5vw, 32px)", fontWeight: 700, lineHeight: 1.3, color: "#f0f4ff", marginBottom: 8 },
-    chSubtitle:  { fontStyle: "italic", fontSize: 16, color: "#64b4ff", marginBottom: 36, opacity: 0.8 },
-    storyBody:   { fontSize: "clamp(17px, 2.5vw, 20px)", lineHeight: 1.95, color: "rgba(240,244,255,0.88)" },
-    storyP:      { marginBottom: 24 },
-    cursor:      { display: "inline-block", width: 2, height: "1em", background: "#64b4ff", marginLeft: 2, verticalAlign: "text-bottom", animation: "blink 1s step-end infinite" },
-    skipHint:    { fontSize: 10, color: "rgba(100,180,255,0.25)", textAlign: "center", marginTop: 20, cursor: "pointer", letterSpacing: 3, textTransform: "uppercase" },
-    choiceSection: { marginTop: 48, paddingTop: 32, borderTop: "1px solid rgba(100,180,255,0.1)" },
-    choicePrompt:  { fontSize: 18, color: "rgba(240,244,255,0.6)", marginBottom: 24, textAlign: "center", fontStyle: "italic" },
-    choiceList:    { display: "flex", flexDirection: "column", gap: 12 },
-    choiceBtn:     { padding: "16px 20px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(100,180,255,0.15)", borderRadius: 10, fontSize: 17, color: "rgba(240,244,255,0.75)", cursor: "pointer", textAlign: "left", lineHeight: 1.5, fontFamily: "inherit" },
-    choiceBtnSel:  { padding: "16px 20px", background: "rgba(100,180,255,0.1)", border: "1px solid #64b4ff", borderRadius: 10, fontSize: 17, color: "#f0f4ff", cursor: "pointer", textAlign: "left", lineHeight: 1.5, fontFamily: "inherit" },
-    choiceHint:    { fontSize: 12, color: "rgba(240,244,255,0.3)", marginTop: 6 },
-    continueBtn:   { marginTop: 24, padding: "15px 36px", background: "linear-gradient(135deg, #1a6fb5, #2196f3)", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: "#fff", cursor: "pointer", display: "block", marginLeft: "auto", marginRight: "auto", fontFamily: "inherit" },
-    endingBtn:     { marginTop: 16, padding: "10px 24px", background: "transparent", border: "1px solid rgba(100,180,255,0.25)", borderRadius: 10, fontSize: 12, letterSpacing: 2, textTransform: "uppercase", color: "rgba(100,180,255,0.5)", cursor: "pointer", display: "block", marginLeft: "auto", marginRight: "auto", fontFamily: "inherit" },
-    loadingState:  { textAlign: "center", padding: "80px 0" },
-    bookEmoji:     { fontSize: 52, marginBottom: 24, display: "block", animation: "bounce 1.5s ease-in-out infinite" },
-    loadingText:   { fontStyle: "italic", fontSize: 18, color: "rgba(240,244,255,0.45)" },
-    errorMsg:      { background: "rgba(255,100,100,0.1)", border: "1px solid rgba(255,100,100,0.3)", borderRadius: 8, padding: "16px 20px", fontSize: 16, color: "#ff9999", marginTop: 20, textAlign: "center" },
-    paywall:       { textAlign: "center", padding: "60px 20px" },
-    paywallEmoji:  { fontSize: 64, marginBottom: 20 },
-    paywallTitle:  { fontSize: 30, fontWeight: 700, color: "#f0f4ff", marginBottom: 12 },
-    paywallSub:    { fontSize: 18, color: "rgba(240,244,255,0.55)", marginBottom: 16, lineHeight: 1.7 },
-    paywallPerks:  { background: "rgba(100,180,255,0.06)", border: "1px solid rgba(100,180,255,0.15)", borderRadius: 10, padding: "20px", marginBottom: 32, textAlign: "left" },
-    perk:          { fontSize: 16, color: "rgba(240,244,255,0.75)", marginBottom: 10, paddingLeft: 4 },
-    paywallBtn:    { padding: "18px 48px", background: "linear-gradient(135deg, #1a6fb5, #2196f3)", border: "none", borderRadius: 10, fontSize: 16, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: "#fff", cursor: "pointer", fontFamily: "inherit", marginBottom: 16, display: "block", width: "100%", maxWidth: 360, marginLeft: "auto", marginRight: "auto", boxShadow: "0 4px 20px rgba(33,150,243,0.3)" },
-    paywallCancel: { fontSize: 13, color: "rgba(240,244,255,0.3)", marginTop: 16, cursor: "pointer" },
-    returningBox:  { background: "rgba(100,180,255,0.06)", border: "1px solid rgba(100,180,255,0.2)", borderRadius: 10, padding: "24px", marginBottom: 32, textAlign: "center" },
-    returningTxt:  { fontSize: 18, color: "rgba(240,244,255,0.75)", marginBottom: 20, fontStyle: "italic" },
+    app:          { minHeight: "100vh", background: "#0f1923", color: "#f0f4ff", fontFamily: "'Georgia', serif" },
+    content:      { maxWidth: 680, margin: "0 auto", padding: "0 20px 100px" },
+    header:       { textAlign: "center", padding: "48px 0 36px", borderBottom: "2px solid rgba(100,180,255,0.15)", marginBottom: 40 },
+    stars:        { fontSize: 24, letterSpacing: 8, marginBottom: 16, opacity: 0.7 },
+    logo:         { fontSize: "clamp(32px, 7vw, 52px)", fontWeight: 700, color: "#f0f4ff", marginBottom: 10, letterSpacing: 2, textShadow: "0 0 40px rgba(100,180,255,0.4)" },
+    logoAccent:   { color: "#64b4ff" },
+    tagline:      { fontStyle: "italic", fontSize: 17, color: "rgba(240,244,255,0.5)" },
+    welcome:      { fontSize: 18, lineHeight: 1.7, color: "rgba(240,244,255,0.75)", marginBottom: 40, borderLeft: "3px solid rgba(100,180,255,0.4)", paddingLeft: 20, fontStyle: "italic" },
+    sectionHdr:   { fontSize: 10, letterSpacing: 4, textTransform: "uppercase", color: "#64b4ff", opacity: 0.8, marginBottom: 16, marginTop: 32 },
+    grid2:        { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 8 },
+    fieldGroup:   { marginBottom: 20 },
+    label:        { display: "block", fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "#64b4ff", opacity: 0.7, marginBottom: 8 },
+    input:        { width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(100,180,255,0.2)", borderRadius: 8, padding: "13px 16px", fontFamily: "inherit", fontSize: 16, color: "#f0f4ff", outline: "none", boxSizing: "border-box" },
+    select:       { width: "100%", background: "#131f2e", border: "1px solid rgba(100,180,255,0.2)", borderRadius: 8, padding: "13px 16px", fontFamily: "inherit", fontSize: 16, color: "#f0f4ff", outline: "none", boxSizing: "border-box" },
+    pillRow:      { display: "flex", flexWrap: "wrap", gap: 8 },
+    pill:         { padding: "8px 14px", border: "1px solid rgba(100,180,255,0.2)", borderRadius: 20, fontSize: 14, color: "rgba(240,244,255,0.55)", cursor: "pointer", background: "transparent", fontFamily: "inherit" },
+    pillActive:   { padding: "8px 14px", border: "1px solid #64b4ff", borderRadius: 20, fontSize: 14, color: "#f0f4ff", cursor: "pointer", background: "rgba(100,180,255,0.12)", fontFamily: "inherit" },
+    themeGrid:    { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 },
+    themeBtn:     { padding: "12px 14px", border: "1px solid rgba(100,180,255,0.15)", borderRadius: 10, fontSize: 15, color: "rgba(240,244,255,0.6)", cursor: "pointer", background: "rgba(255,255,255,0.03)", fontFamily: "inherit", textAlign: "left" },
+    themeBtnOn:   { padding: "12px 14px", border: "1px solid #64b4ff", borderRadius: 10, fontSize: 15, color: "#f0f4ff", cursor: "pointer", background: "rgba(100,180,255,0.1)", fontFamily: "inherit", textAlign: "left" },
+    btnPrimary:   { width: "100%", padding: "18px 0", marginTop: 32, background: "linear-gradient(135deg, #1a6fb5, #2196f3)", border: "none", borderRadius: 10, fontSize: 16, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: "#fff", cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 20px rgba(33,150,243,0.3)" },
+    btnGhost:     { width: "100%", padding: "14px 0", marginTop: 12, background: "transparent", border: "1px solid rgba(100,180,255,0.25)", borderRadius: 10, fontSize: 13, letterSpacing: 2, textTransform: "uppercase", color: "rgba(100,180,255,0.6)", cursor: "pointer", fontFamily: "inherit" },
+    profileBar:   { display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(100,180,255,0.12)", borderRadius: 8, padding: "11px 18px", marginBottom: 32 },
+    chapterMeta:  { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, paddingBottom: 16, borderBottom: "1px solid rgba(100,180,255,0.1)" },
+    chTitle:      { fontSize: "clamp(22px, 5vw, 32px)", fontWeight: 700, lineHeight: 1.3, color: "#f0f4ff", marginBottom: 8 },
+    chSubtitle:   { fontStyle: "italic", fontSize: 16, color: "#64b4ff", marginBottom: 36, opacity: 0.8 },
+    storyBody:    { fontSize: "clamp(17px, 2.5vw, 20px)", lineHeight: 1.95, color: "rgba(240,244,255,0.88)" },
+    storyP:       { marginBottom: 24 },
+    cursor:       { display: "inline-block", width: 2, height: "1em", background: "#64b4ff", marginLeft: 2, verticalAlign: "text-bottom", animation: "blink 1s step-end infinite" },
+    skipHint:     { fontSize: 10, color: "rgba(100,180,255,0.25)", textAlign: "center", marginTop: 20, cursor: "pointer", letterSpacing: 3, textTransform: "uppercase" },
+    choiceSection:{ marginTop: 48, paddingTop: 32, borderTop: "1px solid rgba(100,180,255,0.1)" },
+    choicePrompt: { fontSize: 18, color: "rgba(240,244,255,0.6)", marginBottom: 24, textAlign: "center", fontStyle: "italic" },
+    choiceList:   { display: "flex", flexDirection: "column", gap: 12 },
+    choiceBtn:    { padding: "16px 20px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(100,180,255,0.15)", borderRadius: 10, fontSize: 17, color: "rgba(240,244,255,0.75)", cursor: "pointer", textAlign: "left", lineHeight: 1.5, fontFamily: "inherit" },
+    choiceSel:    { padding: "16px 20px", background: "rgba(100,180,255,0.1)", border: "1px solid #64b4ff", borderRadius: 10, fontSize: 17, color: "#f0f4ff", cursor: "pointer", textAlign: "left", lineHeight: 1.5, fontFamily: "inherit" },
+    choiceHint:   { fontSize: 12, color: "rgba(240,244,255,0.3)", marginTop: 6 },
+    continueBtn:  { marginTop: 24, padding: "15px 36px", background: "linear-gradient(135deg, #1a6fb5, #2196f3)", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: "#fff", cursor: "pointer", display: "block", marginLeft: "auto", marginRight: "auto", fontFamily: "inherit" },
+    endingBtn:    { marginTop: 16, padding: "10px 24px", background: "transparent", border: "1px solid rgba(100,180,255,0.25)", borderRadius: 10, fontSize: 12, letterSpacing: 2, textTransform: "uppercase", color: "rgba(100,180,255,0.5)", cursor: "pointer", display: "block", marginLeft: "auto", marginRight: "auto", fontFamily: "inherit" },
+    loadingState: { textAlign: "center", padding: "80px 0" },
+    bookEmoji:    { fontSize: 52, marginBottom: 24, display: "block", animation: "bounce 1.5s ease-in-out infinite" },
+    loadingText:  { fontStyle: "italic", fontSize: 18, color: "rgba(240,244,255,0.45)" },
+    errorMsg:     { background: "rgba(255,100,100,0.1)", border: "1px solid rgba(255,100,100,0.3)", borderRadius: 8, padding: "16px 20px", fontSize: 16, color: "#ff9999", marginTop: 20, textAlign: "center" },
+    paywall:      { textAlign: "center", padding: "60px 20px" },
+    pwEmoji:      { fontSize: 64, marginBottom: 20 },
+    pwTitle:      { fontSize: 30, fontWeight: 700, color: "#f0f4ff", marginBottom: 12 },
+    pwSub:        { fontSize: 18, color: "rgba(240,244,255,0.55)", marginBottom: 16, lineHeight: 1.7 },
+    pwPerks:      { background: "rgba(100,180,255,0.06)", border: "1px solid rgba(100,180,255,0.15)", borderRadius: 10, padding: "20px", marginBottom: 32, textAlign: "left" },
+    perk:         { fontSize: 16, color: "rgba(240,244,255,0.75)", marginBottom: 10, paddingLeft: 4 },
+    pwBtn:        { padding: "18px 48px", background: "linear-gradient(135deg, #1a6fb5, #2196f3)", border: "none", borderRadius: 10, fontSize: 16, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: "#fff", cursor: "pointer", fontFamily: "inherit", marginBottom: 16, display: "block", width: "100%", maxWidth: 360, marginLeft: "auto", marginRight: "auto", boxShadow: "0 4px 20px rgba(33,150,243,0.3)" },
+    pwCancel:     { fontSize: 13, color: "rgba(240,244,255,0.3)", marginTop: 16, cursor: "pointer", fontStyle: "italic" },
+    retBox:       { background: "rgba(100,180,255,0.06)", border: "1px solid rgba(100,180,255,0.2)", borderRadius: 10, padding: "24px", marginBottom: 32, textAlign: "center" },
+    retTxt:       { fontSize: 18, color: "rgba(240,244,255,0.75)", marginBottom: 20, fontStyle: "italic" },
+    emailBox:     { textAlign: "center", padding: "60px 20px" },
+    emailTitle:   { fontSize: 28, fontWeight: 700, color: "#f0f4ff", marginBottom: 12 },
+    emailSub:     { fontSize: 17, color: "rgba(240,244,255,0.55)", marginBottom: 32, lineHeight: 1.7, fontStyle: "italic" },
+    emailInput:   { width: "100%", maxWidth: 360, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(100,180,255,0.3)", borderRadius: 10, padding: "14px 18px", fontFamily: "inherit", fontSize: 17, color: "#f0f4ff", outline: "none", boxSizing: "border-box", marginBottom: 12, display: "block", marginLeft: "auto", marginRight: "auto" },
+    emailBtn:     { padding: "15px 36px", background: "linear-gradient(135deg, #1a6fb5, #2196f3)", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: "#fff", cursor: "pointer", fontFamily: "inherit", display: "block", marginLeft: "auto", marginRight: "auto", marginBottom: 16 },
+    emailAlt:     { fontSize: 13, color: "rgba(240,244,255,0.3)", cursor: "pointer", fontStyle: "italic" },
+    emailErr:     { fontSize: 14, color: "#ff9999", marginTop: 8, textAlign: "center" },
   };
 
-  const globalCSS = `
+  const css = `
     @keyframes blink { 50% { opacity: 0; } }
     @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -414,8 +485,8 @@ export default function StoryOurs() {
   function PillSelect({ options, value, onChange }) {
     return (
       <div style={S.pillRow}>
-        {options.map(opt => (
-          <button key={opt} style={value === opt ? S.pillActive : S.pill} onClick={() => onChange(opt)}>{opt}</button>
+        {options.map(o => (
+          <button key={o} style={value === o ? S.pillActive : S.pill} onClick={() => onChange(o)}>{o}</button>
         ))}
       </div>
     );
@@ -423,7 +494,7 @@ export default function StoryOurs() {
 
   return (
     <>
-      <style>{globalCSS}</style>
+      <style>{css}</style>
       <div style={S.app}>
         <div style={S.content}>
 
@@ -433,20 +504,57 @@ export default function StoryOurs() {
             <div style={S.tagline}>Adventures written just for your child</div>
           </header>
 
-          {screen === "onboarding" && (
+          {/* Email verification screen */}
+          {emailScreen && (
+            <div style={S.emailBox}>
+              <div style={{ fontSize: 52, marginBottom: 20 }}>🌟</div>
+              <h2 style={S.emailTitle}>Welcome to Story Ours!</h2>
+              <p style={S.emailSub}>
+                Enter the email you used to subscribe and we'll unlock unlimited adventures on any device.
+              </p>
+              <input
+                style={S.emailInput}
+                type="email"
+                placeholder="your@email.com"
+                value={emailInput}
+                onChange={e => setEmailInput(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleEmailSubmit()}
+              />
+              {emailError && <div style={S.emailErr}>{emailError}</div>}
+              <button style={S.emailBtn} onClick={handleEmailSubmit} disabled={emailLoading}>
+                {emailLoading ? "Checking…" : "Unlock My Stories →"}
+              </button>
+              <div style={S.emailAlt} onClick={() => setEmailScreen(false)}>Go back</div>
+            </div>
+          )}
+
+          {/* Onboarding */}
+          {!emailScreen && screen === "onboarding" && (
             <div>
               <p style={S.welcome}>Every story is written especially for your child — their name, their favourite things, their choices shape every adventure. Funny enough for parents. Magical enough for kids.</p>
 
               {returning && (
-                <div style={S.returningBox}>
-                  <p style={S.returningTxt}>Welcome back! {profile.childName}'s adventure is waiting! 🌟</p>
-                  <button style={S.btnStart} onClick={() => { setReturning(false); setScreen("story"); if (!chapter) generateChapter(); }}>Continue the Adventure</button>
-                  <button style={S.btnGhost} onClick={() => { setReturning(false); clearProgress(); }}>Start a New Story</button>
+                <div style={S.retBox}>
+                  <p style={S.retTxt}>Welcome back! {profile.childName}'s adventure is waiting! 🌟</p>
+                  <button style={S.btnPrimary} onClick={() => { setReturning(false); setScreen("story"); if (!chapter) generateChapter(); }}>Continue the Adventure</button>
+                  <button style={S.btnGhost} onClick={() => { setReturning(false); remove(PROGRESS_KEY); }}>Start a New Story</button>
                 </div>
               )}
 
               {!returning && (
                 <>
+                  {/* Already subscribed? */}
+                  {!unlocked && (
+                    <div style={{ textAlign: "center", marginBottom: 24 }}>
+                      <span style={{ fontSize: 14, color: "rgba(240,244,255,0.35)", fontStyle: "italic" }}>
+                        Already subscribed?{" "}
+                        <span style={{ color: "#64b4ff", cursor: "pointer" }} onClick={() => setEmailScreen(true)}>
+                          Sign in with your email
+                        </span>
+                      </span>
+                    </div>
+                  )}
+
                   <div style={S.sectionHdr}>About the Hero</div>
                   <div style={S.grid2}>
                     <div style={S.fieldGroup}>
@@ -478,7 +586,7 @@ export default function StoryOurs() {
                     <label style={S.label}>Story Theme</label>
                     <div style={S.themeGrid}>
                       {THEMES.map(t => (
-                        <button key={t.id} style={profile.theme === t.id ? S.themeBtnActive : S.themeBtn}
+                        <button key={t.id} style={profile.theme === t.id ? S.themeBtnOn : S.themeBtn}
                           onClick={() => setProfile(p => ({ ...p, theme: t.id }))}>{t.label}</button>
                       ))}
                     </div>
@@ -488,7 +596,7 @@ export default function StoryOurs() {
                     <label style={S.label}>Sidekick</label>
                     <div style={S.themeGrid}>
                       {SIDEKICKS.map(s => (
-                        <button key={s.id} style={profile.sidekick === s.id ? S.themeBtnActive : S.themeBtn}
+                        <button key={s.id} style={profile.sidekick === s.id ? S.themeBtnOn : S.themeBtn}
                           onClick={() => setProfile(p => ({ ...p, sidekick: s.id }))}>{s.label}</button>
                       ))}
                     </div>
@@ -505,7 +613,7 @@ export default function StoryOurs() {
 
                   {error && <div style={S.errorMsg}>{error}</div>}
 
-                  <button style={{ ...S.btnStart, opacity: profile.childName.trim() ? 1 : 0.4 }}
+                  <button style={{ ...S.btnPrimary, opacity: profile.childName.trim() ? 1 : 0.4 }}
                     onClick={handleStart} disabled={!profile.childName.trim()}>
                     🚀 Begin the Adventure!
                   </button>
@@ -514,33 +622,36 @@ export default function StoryOurs() {
             </div>
           )}
 
-          {screen === "loading" && (
+          {/* Loading */}
+          {!emailScreen && screen === "loading" && (
             <div style={S.loadingState}>
               <span style={S.bookEmoji}>📖</span>
               <div style={S.loadingText}>{loadingMsg}</div>
             </div>
           )}
 
-          {showPaywall && (
+          {/* Paywall */}
+          {!emailScreen && showPaywall && (
             <div style={S.paywall}>
-              <div style={S.paywallEmoji}>🌟</div>
-              <h2 style={S.paywallTitle}>The adventure continues!</h2>
-              <p style={S.paywallSub}>{profile.childName} has come so far — and the best chapters are still ahead. (So is the funny bit about the dragon.)</p>
-              <div style={S.paywallPerks}>
+              <div style={S.pwEmoji}>🌟</div>
+              <h2 style={S.pwTitle}>The adventure continues!</h2>
+              <p style={S.pwSub}>{profile.childName} has come so far — and the best chapters are still ahead.</p>
+              <div style={S.pwPerks}>
                 <div style={S.perk}>✅ Unlimited chapters — never stop mid-adventure</div>
                 <div style={S.perk}>✅ Unlimited new stories — new theme any time</div>
-                <div style={S.perk}>✅ Progress always saved</div>
-                <div style={S.perk}>✅ Works on any device</div>
+                <div style={S.perk}>✅ Works on any device with your email</div>
                 <div style={{ ...S.perk, marginBottom: 0 }}>✅ Cancel anytime</div>
               </div>
-              <button style={S.paywallBtn} onClick={handleCheckout}>
-                Unlock All Stories — $2.99/mo
-              </button>
-              <div style={S.paywallCancel} onClick={handleRestart}>Start a different story instead</div>
+              <button style={S.pwBtn} onClick={handleCheckout}>Unlock All Stories — $2.99/mo</button>
+              <div style={{ ...S.emailAlt, marginTop: 16 }} onClick={() => { setShowPaywall(false); setEmailScreen(true); }}>
+                Already subscribed? Sign in with email
+              </div>
+              <div style={{ ...S.pwCancel, marginTop: 12 }} onClick={handleRestart}>Start a different story instead</div>
             </div>
           )}
 
-          {screen === "story" && chapter && !showPaywall && (
+          {/* Story */}
+          {!emailScreen && screen === "story" && chapter && !showPaywall && (
             <div>
               <div style={S.profileBar}>
                 <div style={{ fontStyle: "italic", fontSize: 15, color: "rgba(240,244,255,0.6)" }}>{profile.childName}'s adventure 🌟</div>
@@ -577,7 +688,7 @@ export default function StoryOurs() {
                   <p style={S.choicePrompt}>What does {profile.childName} do next?</p>
                   <div style={S.choiceList}>
                     {chapter.choices.map((c, i) => (
-                      <button key={i} style={selectedChoice?.text === c.text ? S.choiceBtnSel : S.choiceBtn}
+                      <button key={i} style={selectedChoice?.text === c.text ? S.choiceSel : S.choiceBtn}
                         onClick={() => setSelectedChoice(c)}>
                         <span style={{ fontSize: 20, marginRight: 10 }}>{c.emoji}</span>
                         {c.text}
@@ -585,11 +696,9 @@ export default function StoryOurs() {
                       </button>
                     ))}
                   </div>
-
                   {selectedChoice && (
                     <button style={S.continueBtn} onClick={handleNextChapter}>Let's go! →</button>
                   )}
-
                   {showEndingBtn && (
                     <button style={S.endingBtn} onClick={generateEnding}>⭐ Finish my story</button>
                   )}
