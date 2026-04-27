@@ -7,16 +7,25 @@ const AGE_GROUPS = [
 ];
 
 const THEMES = [
-  { id: "space",    label: "🚀 Outer Space",      desc: "Stars, planets, alien friends" },
-  { id: "dragons",  label: "🐉 Dragons & Magic",   desc: "Spells, castles, mythical creatures" },
-  { id: "ocean",    label: "🌊 Ocean Deep",        desc: "Mermaids, sea monsters, treasure" },
-  { id: "jungle",   label: "🌿 Jungle Quest",      desc: "Hidden temples, exotic animals" },
-  { id: "pirates",  label: "🏴‍☠️ Pirate Adventure",  desc: "Ships, islands, buried treasure" },
-  { id: "school",   label: "✨ Magic School",      desc: "Powers, friendships, secret lessons" },
-  { id: "dino",     label: "🦕 Dinosaur World",    desc: "Time travel, prehistoric beasts" },
-  { id: "fairy",    label: "🧚 Fairy Kingdom",     desc: "Tiny worlds, big hearts, enchantment" },
+  { id: "space",      label: "🚀 Outer Space",        desc: "Stars, planets, alien friends" },
+  { id: "dragons",    label: "🐉 Dragons & Magic",     desc: "Spells, castles, mythical creatures" },
+  { id: "ocean",      label: "🌊 Ocean Deep",          desc: "Mermaids, sea monsters, treasure" },
+  { id: "jungle",     label: "🌿 Jungle Quest",        desc: "Hidden temples, exotic animals" },
+  { id: "pirates",    label: "🏴‍☠️ Pirate Adventure",    desc: "Ships, islands, buried treasure" },
+  { id: "school",     label: "✨ Magic School",        desc: "Powers, friendships, secret lessons" },
+  { id: "dino",       label: "🦕 Dinosaur World",      desc: "Time travel, prehistoric beasts" },
+  { id: "fairy",      label: "🧚 Fairy Kingdom",       desc: "Tiny worlds, big hearts, enchantment" },
+  { id: "football",   label: "⚽ Football Stars",      desc: "Last minute goals, legendary matches" },
+  { id: "basketball", label: "🏀 Basketball Legends",  desc: "Big courts, bigger dreams" },
+  { id: "xmas",       label: "🎄 Christmas Adventure", desc: "Snow, elves, and something gone wrong" },
+  { id: "easter",     label: "🐣 Easter Quest",        desc: "Hidden eggs, mischievous bunnies" },
+  { id: "holiday",    label: "🏖️ Holiday Resort",      desc: "Sun, sand, and very strange guests" },
+  { id: "superhero",  label: "🦸 Superhero Academy",   desc: "New powers, zero idea how to use them" },
+  { id: "videogame",  label: "🎮 Inside a Video Game", desc: "Extra lives, final bosses, glitches" },
+  { id: "tiny",       label: "🐜 Tiny World",          desc: "Shrunk to ant size — everything is huge" },
+  { id: "weather",    label: "🌈 Weather Warriors",    desc: "Control the weather, save the day" },
+  { id: "circus",     label: "🎪 Travelling Circus",   desc: "Acrobats, mysteries, a missing lion" },
 ];
-
 const SIDEKICKS = [
   { id: "dog",    label: "🐶 Loyal Dog" },
   { id: "dragon", label: "🐲 Baby Dragon" },
