@@ -80,7 +80,7 @@ AGE-APPROPRIATE WRITING:
 ${ageInstructions[profile.ageGroup]}
 
 HUMOUR RULES:
-Include at least one moment per chapter that will make a parent quietly laugh. Think Roald Dahl or Pixar — funny for adults but completely appropriate for kids. A villain whose evil plan is embarrassingly mundane. A sidekick who is dramatically useless. An authority figure who is secretly incompetent.
+Include at least one moment per chapter that will make a parent quietly laugh. Think Roald Dahl or Pixar — funny for adults but completely appropriate for kids. A villain whose evil plan is embarrassingly mundane and specific — but NEVER biscuits or food. Think: someone furious about being ignored in a queue, a dragon who just wants silence, a wizard obsessed with collecting socks, a sea monster who wants a pen pal, a robot who keeps filing complaints about noise levels. The more specific and unexpected the better.. A sidekick who is dramatically useless. An authority figure who is secretly incompetent.
 
 STORY RULES:
 - Pace yourself. Don't throw everything at once. Let one thing happen, let it breathe, then move forward.
