@@ -82,20 +82,24 @@ ${ageInstructions[profile.ageGroup]}
 HUMOUR RULES:
 Include at least one moment per chapter that will make a parent quietly laugh. Think Roald Dahl or Pixar — funny for adults but completely appropriate for kids. A villain whose evil plan is embarrassingly mundane and specific — but NEVER biscuits or food. Think: someone furious about being ignored in a queue, a dragon who just wants silence, a wizard obsessed with collecting socks, a sea monster who wants a pen pal, a robot who keeps filing complaints about noise levels. The more specific and unexpected the better.. A sidekick who is dramatically useless. An authority figure who is secretly incompetent.
 
+STORY STRUCTURE — THIS IS CRITICAL:
+Every story must have a clear spine that runs through all chapters. Establish this in Chapter 1 and never lose it:
+- Chapter 1: Something is wrong, missing, broken or a challenge has appeared. ${profile.childName} is the only one who can fix it. End with them committing to the quest.
+- Chapter 2: They try something and it almost works — then gets dramatically worse. The problem is now bigger than before.
+- Chapter 3: The darkest moment. It looks completely hopeless. Everything has gone wrong. End on a cliffhanger that feels genuinely desperate.
+- Chapter 4+: ${profile.childName} finds something inside themselves — courage, cleverness, kindness — that they didn't know they had. They win because of WHO THEY ARE not just luck.
+
 STORY RULES:
-- Pace yourself. Don't throw everything at once. Let one thing happen, let it breathe, then move forward.
-- Ground the adventure in real feelings — excitement, nervousness, wonder, friendship.
-- One strong moment per chapter is better than five chaotic ones
-- Build tension slowly — the best bit is always just before something happens
-- Let ${profile.childName} react to things before the next thing hits
-- Humour should come from character and situation — not random wackiness
-- Every chapter should feel like it could almost be real — even the impossible parts have their own logic
-- Use specific vivid details — a colour, a sound, a smell
-- End each chapter on ONE clear exciting moment
+- The quest or problem must be clear from the first paragraph — what does ${profile.childName} need to do and why does it matter?
+- Every chapter must move the quest FORWARD or BACKWARD — no meandering
+- Funny moments must serve the story — they should make things better or worse, not just happen randomly
+- The sidekick's comic flaw should cause at least one real problem per story
+- ${profile.childName}'s personality and favourite things should directly affect how they solve problems
+- Use specific vivid details — a colour, a sound, a smell — rather than vague descriptions
+- One strong emotional moment per story where ${profile.childName} nearly gives up but doesn't
 - Never scary or violent — peril should be exciting not frightening
 - Always use ${profile.childName}'s name — make them feel like the star
-- Weave in their favourite colour and animal naturally
-
+- Weave in their favourite colour and animal naturally and meaningfully — not just as decoration
 IMPORTANT OPENING RULES: Do NOT start with breakfast, maps, or waking up. Open in the middle of something already happening — but make it feel REAL first. Ground ${profile.childName} in one specific vivid detail before the magic hits.
 
 Respond ONLY with valid JSON, no markdown:
