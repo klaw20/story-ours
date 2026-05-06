@@ -46,7 +46,7 @@ const LOADING_MSGS = [
   "Something amazing is coming…",
 ];
 
-const FREE_CHAPTERS = 3;
+const FREE_CHAPTERS = 999;
 
 function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} }
 function load(key) { try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : null; } catch { return null; } }
