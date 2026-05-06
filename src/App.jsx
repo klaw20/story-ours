@@ -108,9 +108,9 @@ Respond ONLY with valid JSON, no markdown:
   "subtitle": "One line that sets the mood",
   "story": "2-3 punchy paragraphs. Short sentences. Every word earns its place. Separate with \\n",
   "choices": [
-    { "emoji": "⚡", "text": "First exciting choice", "hint": "What might happen..." },
-    { "emoji": "🌟", "text": "Second exciting choice", "hint": "What might happen..." },
-    { "emoji": "🎲", "text": "Third surprising choice", "hint": "What might happen..." }
+    { "emoji": "⚡", "text": "Short choice under 8 words", "hint": "3 words max" },
+    { "emoji": "🌟", "text": "Short choice under 8 words", "hint": "3 words max" },
+    { "emoji": "🎲", "text": "Short choice under 8 words", "hint": "3 words max" }
   ]
 }`;
 }
