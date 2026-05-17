@@ -319,7 +319,7 @@ export default function StoryOurs() {
     }, 30000);
 
     try {
-      const userMsg = `Story so far:\n${storyHistory.join("\n\n")}\n\nWrite a final triumphant ending. ${profile.childName} saves the day and celebrates. Include one last funny callback to something earlier. Warm, joyful, satisfying.`;
+      const userMsg = `Story so far:\n${storyHistory[storyHistory.length - 1]}\n\nWrite the ending. ${profile.childName} wins. Keep it short and joyful.`;
 
       const res = await fetch("/.netlify/functions/story", {
         method: "POST",
